@@ -1,0 +1,137 @@
+
+CPS590 Assignment 1: Parallel Game of Life
+
+  -See A1Addendum.txt for modifications, QA, etc.
+  -The due date is firm. No late submissions accepted.
+
+  -You may work in groups of 1-5 people, with no marking penalty.
+  -See groups.txt for submission and group information.
+  -submit using: submit-cps590dwoit
+  -submit one C program, named: A1.c
+  -include compilation instructions in comments at the start of A1.c
+
+You will implement Conway's Game of Life according to the specifications
+of this assignment. Wikipedia gives a good overview of the basic game; the 
+part relevant for this assignment is everything up to and including the first
+paragraph in "Algorithms": 
+   http://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
+There are numerous solutions online. DO NOT plagiarize. You cannot submit a 
+modified version of someone else's code as your own; You CAN, however, refer
+to someone else's code to help you write your own.
+
+Data Structures:
+Your grid must be a 2-D array of integers, where a cell contains 0 if dead, 
+and 1 if alive. You MUST use a square NxN grid, where N>3.
+FYI: The code below allocates, initializes and prints an NxN 2-D array:
+
+       int **A;
+       A = malloc(N * sizeof(int *));
+       for (i = 0; i < N; i++)
+         A[i] = malloc(N * sizeof(int));
+       
+       for (i=1;i<N;i++)
+         for (j=1;j<N;j++) 
+           A[i][i]=0;
+       
+       for (i = 0; i < N; i++) {
+         for (j = 0; j < N; j++)
+           printf("%d ", A[i][j]);
+         printf("\n");
+       }
+
+
+Grid Update Strategy:
+Use must use 2 grids, as described in wikipedia (in the first paragraph under 
+"Algorithms"). It is important that you alternate these grids as they describe.
+i.e., For each cell in the generation i, its neighbors are the 8 neighboring
+cells in the SAME grid. As values for generation i+1 are calculated, they
+are placed into the OTHER grid. Once the grid for generation i+1 is completed
+and printed, the grids are swapped (the pointers, not the values!) before 
+calculating the next generation.  You must use 2 grids, or your calculations 
+will be incorrect because results will differ, depending on the order in which 
+you update the cells. 
+
+Boundaries:
+You must use toroidal boundary conditions, which means that cells on 
+one edge of the grid wrap around to join the opposite edge of the grid. 
+So cells along the top are adjacent to cells along the bottom, and
+cells along the right are adjacent to cells along the left. 
+Figure 1 shows the eight neighbors of cell x, and the 8 neighbors of cell y.
+http://www.scs.ryerson.ca/~dwoit/courses/cps590/coursedirPublic590/Assignment1/Assign1Fig1.jpg
+
+Input and Output:
+Your program takes the name of a text input file as a command-line-argument.
+The file will contain the configuration for generation 1.
+The configuration MUST contain one integer on the first line (value of N),
+and subsequent lines contain the NxN initial configuration of 0's and 1's.
+For example, an input file could contain the following:
+9
+0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+0 0 0 1 1 1 0 0 0
+0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+
+Your program displays the initial configuration at the top left corner of
+your bash shell window. It does this by using the system function from 
+<stdlib.h> to clear the screen, as in: system("clear"); , before printing
+the grid on stdout.
+Your program loops, reading a character from stdin each time.
+Each time a character is read, the screen is cleared, and the
+next generation is displayed (at top left of screen).
+
+When displaying a generation on the screen, draw a text boarder around
+the grid; display dead cells as blanks; display alive cells as "x"; 
+put no blanks between cells. Thus, the display of generation 1 
+corresponding to the input file above should be:
+-----------
+|         |
+|         |
+|         |
+|         |
+|   xxx   |
+|         |
+|         |
+|         |
+|         |
+-----------
+
+
+Parallelization:
+Once your Game of Life working, proceed with parallelizing it.
+Add a second command-line argument, corresponding to T, the number of 
+parallel child threads.  Divide the grid into T chunks, and have each 
+of the T parallel child threads perform calculations on its 
+corresponding chunk.  How you divide your grid into chunks is your 
+choice (some people use chunks of rows, some use rectangular chunks, 
+etc.) Your program must divide the grid as evenly as possible. e.g., 
+if you use row chunks, and T=5 and N=100, then each thread processes 
+20 rows.
+
+Threads:
+Use Linux light-weight processes (created with the clone function).
+It is acceptable to synchronize threads using a busy-wait (a loop that
+continually checks the value of a variable, and only terminates once
+that value has changed). Optionally, you may use signals to synchronize
+threads.
+
+Your Program Must:
+  Compile and work on a CS moon.
+  Be robust, and print appropriate error messages to stderr.
+  (Do not assume the input file will have correct format).
+  
+Grading:
+The program will be graded on various factors including the appropriateness
+of the following:
+   Input and output handling.
+   Use of 2 grids as specified.
+   Use of threads.
+   Synchronization.
+   Robustness (including stderr etc.)
+   Modularity, style, algorithms.
+Note: "performance" (speed of execution) is not graded.
+
